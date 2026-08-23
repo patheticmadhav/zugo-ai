@@ -1,0 +1,9 @@
+flask
+gunicorn
+requests
+duckduckgo-search
+pdfplumber
+python-docx
+python-pptx
+pytesseract
+Pillow
