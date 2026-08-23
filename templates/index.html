@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zugo — created by Madhav Dua</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&display=swap');
+
+  :root{
+    --bg: #12141a;
+    --panel: #191c24;
+    --line: #2a2e38;
+    --text: #e8e6df;
+    --muted: #8b8f9c;
+    --amber: #d8a446;
+    --amber-dim: #a37f3e;
+    --user-bubble: #232733;
+  }
+
+  *{ box-sizing: border-box; }
+  html,body{ height:100%; margin:0; }
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    display:flex;
+    flex-direction:column;
+  }
+
+  header{
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+
+  .brand{ display:flex; align-items:baseline; gap:10px; }
+  .brand h1{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size: 22px;
+    margin:0;
+    letter-spacing: 0.5px;
+  }
+  .brand span.dot{
+    display:inline-block;
+    width:8px; height:8px;
+    border-radius:50%;
+    background: var(--amber);
+    box-shadow: 0 0 8px var(--amber);
+    animation: pulse 2.4s infinite ease-in-out;
+  }
+  @keyframes pulse{
+    0%,100%{ opacity:1; }
+    50%{ opacity:0.35; }
+  }
+  .status{
+    font-size:11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  main{
+    flex:1;
+    overflow-y:auto;
+    padding: 32px 0 120px 0;
+  }
+
+  .thread{
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display:flex;
+    flex-direction:column;
+    gap: 22px;
+  }
+
+  .msg{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    max-width: 85%;
+  }
+  .msg.user{ align-self:flex-end; align-items:flex-end; }
+  .msg.zugo{ align-self:flex-start; align-items:flex-start; }
+
+  .msg .role{
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .msg .bubble{
+    padding: 12px 16px;
+    border-radius: 3px;
+    line-height: 1.55;
+    font-size: 14.5px;
+    white-space: pre-wrap;
+  }
+  .msg.user .bubble{
+    background: var(--user-bubble);
+    border: 1px solid var(--line);
+  }
+  .msg.zugo .bubble{
+    background: transparent;
+    border-left: 2px solid var(--amber-dim);
+    padding-left: 14px;
+    border-radius: 0;
+  }
+
+  .thinking{
+    color: var(--muted);
+    font-size: 13px;
+    font-style: italic;
+  }
+
+  footer{
+    position: fixed;
+    bottom:0; left:0; right:0;
+    padding: 18px 20px 22px 20px;
+    background: linear-gradient(to top, var(--bg) 60%, transparent);
+  }
+
+  .composer{
+    max-width: 720px;
+    margin: 0 auto;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    display:flex;
+    align-items:flex-end;
+    gap: 8px;
+    padding: 10px 10px 10px 16px;
+  }
+
+  .composer textarea{
+    flex:1;
+    background: transparent;
+    border: none;
+    outline: none;
+    resize: none;
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    max-height: 140px;
+    padding: 8px 0;
+  }
+
+  .composer .actions{
+    display:flex;
+    align-items:center;
+    gap: 6px;
+  }
+
+  .icon-btn{
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    border-radius: 3px;
+    width: 34px; height: 34px;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    font-size: 15px;
+  }
+  .icon-btn:hover{ border-color: var(--amber-dim); color: var(--amber); }
+
+  .send-btn{
+    background: var(--amber);
+    border: none;
+    color: #191305;
+    border-radius: 3px;
+    width: 34px; height: 34px;
+    font-weight:600;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .send-btn:hover{ background:#e6b658; }
+
+  .hint{
+    max-width: 720px;
+    margin: 8px auto 0 auto;
+    color: var(--muted);
+    font-size: 11px;
+    padding: 0 18px;
+  }
+
+  #file-input{ display:none; }
+
+  main::-webkit-scrollbar{ width:8px; }
+  main::-webkit-scrollbar-thumb{ background: var(--line); border-radius: 4px; }
+
+  .drop-overlay{
+    display:none;
+    position: fixed;
+    inset: 0;
+    background: rgba(18,20,26,0.92);
+    border: 2px dashed var(--amber);
+    z-index: 50;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    gap: 10px;
+    color: var(--amber);
+    font-size: 16px;
+    text-align:center;
+  }
+  .drop-overlay.active{ display:flex; }
+
+  .file-chip{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background: var(--panel);
+    border: 1px solid var(--amber-dim);
+    color: var(--text);
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 3px;
+    max-width: 720px;
+    margin: 0 auto 8px auto;
+  }
+  .file-chip button{
+    background:none; border:none; color: var(--muted);
+    cursor:pointer; font-size:14px; margin-left:auto;
+  }
+
+  @media (max-width: 640px){
+    header{ padding: 14px 16px; }
+    .brand h1{ font-size: 19px; }
+    .status{ font-size: 9px; letter-spacing: 1px; }
+    main{ padding: 20px 0 130px 0; }
+    .thread{ padding: 0 12px; gap: 16px; }
+    .msg{ max-width: 94%; }
+    .msg .bubble{ font-size: 14px; padding: 10px 13px; }
+    footer{ padding: 12px 10px 16px 10px; }
+    .composer{ padding: 8px 8px 8px 12px; }
+    .composer textarea{ font-size: 16px; }
+    .hint{ font-size: 10px; padding: 0 12px; }
+    .icon-btn, .send-btn{ width: 38px; height: 38px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="drop-overlay" id="drop-overlay">
+  <div>📄 Drop your file here</div>
+  <div style="font-size:12px; color:var(--muted);">PDF, Word, PowerPoint, or image</div>
+</div>
+
+<header>
+  <div class="brand">
+    <span class="dot"></span>
+    <h1>Zugo</h1>
+  </div>
+  <div class="status">private · by Madhav Dua</div>
+</header>
+
+<main>
+  <div class="thread" id="thread">
+    <div class="msg zugo">
+      <div class="role">Zugo</div>
+      <div class="bubble">I'm running entirely on this machine — nothing you tell me leaves it, except when you ask me to search the web. Ask me anything, drop in a document, or tell me something to remember.</div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="composer">
+    <textarea id="input" rows="1" placeholder="Message Zugo..."></textarea>
+    <div class="actions">
+      <input type="file" id="file-input" accept=".pdf,.docx,.pptx,.png,.jpg,.jpeg,.txt">
+      <button class="icon-btn" id="attach-btn" title="Attach a document">＋</button>
+      <button class="send-btn" id="send-btn" title="Send">↑</button>
+    </div>
+  </div>
+  <div class="hint">Everything is stored locally in /memory and /documents on this computer. Zugo — created by Madhav Dua.</div>
+</footer>
+
+<script>
+const thread = document.getElementById('thread');
+const input = document.getElementById('input');
+const sendBtn = document.getElementById('send-btn');
+const attachBtn = document.getElementById('attach-btn');
+const fileInput = document.getElementById('file-input');
+const dropOverlay = document.getElementById('drop-overlay');
+const composer = document.querySelector('.composer');
+
+let pendingFile = null;
+
+function addMessage(role, text){
+  const msg = document.createElement('div');
+  msg.className = 'msg ' + (role === 'user' ? 'user' : 'zugo');
+  msg.innerHTML = `<div class="role">${role === 'user' ? 'You' : 'Zugo'}</div><div class="bubble">${text}</div>`;
+  thread.appendChild(msg);
+  document.querySelector('main').scrollTop = document.querySelector('main').scrollHeight;
+  return msg;
+}
+
+function addThinking(){
+  const el = document.createElement('div');
+  el.className = 'thinking';
+  el.id = 'thinking-indicator';
+  el.textContent = 'Zugo is thinking...';
+  thread.appendChild(el);
+  document.querySelector('main').scrollTop = document.querySelector('main').scrollHeight;
+}
+
+function removeThinking(){
+  const el = document.getElementById('thinking-indicator');
+  if (el) el.remove();
+}
+
+function showFileChip(file){
+  pendingFile = file;
+  let chip = document.getElementById('file-chip');
+  if (chip) chip.remove();
+  chip = document.createElement('div');
+  chip.id = 'file-chip';
+  chip.className = 'file-chip';
+  chip.innerHTML = `📎 ${file.name} <button id="remove-file">✕</button>`;
+  composer.parentElement.insertBefore(chip, composer);
+  document.getElementById('remove-file').addEventListener('click', () => {
+    pendingFile = null;
+    chip.remove();
+  });
+  input.focus();
+}
+
+async function sendMessage(){
+  const text = input.value.trim();
+  if (!text && !pendingFile) return;
+
+  if (pendingFile){
+    addMessage('user', text ? `[${pendingFile.name}] ${text}` : `[uploaded: ${pendingFile.name}]`);
+    addThinking();
+
+    const formData = new FormData();
+    formData.append('file', pendingFile);
+    formData.append('instruction', text);
+
+    const chip = document.getElementById('file-chip');
+    if (chip) chip.remove();
+    const fileToSend = pendingFile;
+    pendingFile = null;
+    input.value = '';
+    input.style.height = 'auto';
+
+    try{
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      removeThinking();
+      addMessage('zugo', data.reply);
+    }catch(err){
+      removeThinking();
+      addMessage('zugo', 'Upload failed. Check server.py is running.');
+    }
+    return;
+  }
+
+  addMessage('user', text);
+  input.value = '';
+  input.style.height = 'auto';
+  addThinking();
+
+  try{
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({message: text})
+    });
+    const data = await res.json();
+    removeThinking();
+    addMessage('zugo', data.reply);
+  }catch(err){
+    removeThinking();
+    addMessage('zugo', 'Something went wrong reaching the local server. Is server.py still running?');
+  }
+}
+
+sendBtn.addEventListener('click', sendMessage);
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey){
+    e.preventDefault();
+    sendMessage();
+  }
+});
+input.addEventListener('input', () => {
+  input.style.height = 'auto';
+  input.style.height = input.scrollHeight + 'px';
+});
+
+attachBtn.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', () => {
+  if (fileInput.files[0]) showFileChip(fileInput.files[0]);
+  fileInput.value = '';
+});
+
+// Drag and drop anywhere on the page
+let dragCounter = 0;
+window.addEventListener('dragenter', (e) => {
+  e.preventDefault();
+  dragCounter++;
+  dropOverlay.classList.add('active');
+});
+window.addEventListener('dragleave', (e) => {
+  e.preventDefault();
+  dragCounter--;
+  if (dragCounter <= 0) dropOverlay.classList.remove('active');
+});
+window.addEventListener('dragover', (e) => e.preventDefault());
+window.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dragCounter = 0;
+  dropOverlay.classList.remove('active');
+  if (e.dataTransfer.files.length > 0){
+    showFileChip(e.dataTransfer.files[0]);
+  }
+});
+</script>
+
+</body>
+</html>
